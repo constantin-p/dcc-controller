@@ -1,0 +1,15 @@
+# IntelliJ
+lib/
+out/
+.idea/
+*.iml
+*.iws
+
+!DCCController.iml
+
+# macOS
+.DS_Store
+
+# Maven
+log/
+target/
