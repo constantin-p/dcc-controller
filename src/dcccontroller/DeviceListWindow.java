@@ -22,13 +22,9 @@ public class DeviceListWindow extends JFrame {
 
         ArrayList<CPDeviceItem> deviceItems = app.getDevices();
 
-        content = new DeviceList(deviceItems, dialogManager, (CPDeviceItem item) -> {
-            // openDeviceCallback
-            app.showControlWindow(item);
-        }, (ArrayList<CPDeviceItem> item) -> {
+        content = new DeviceList(deviceItems, app, dialogManager, (ArrayList<CPDeviceItem> item) -> {
             // deviceListChangeCallback
             app.setDevices(item);
-            System.out.println(app.getDevices());
         });
         setContentPane(content.rootPanel);
 

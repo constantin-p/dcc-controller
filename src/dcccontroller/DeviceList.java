@@ -18,7 +18,7 @@ public class DeviceList {
     private JPanel contentPanel;
     private ArrayList<CPDeviceItem> deviceList = new ArrayList<>();
 
-    private Callback<CPDeviceItem> openDeviceCallback;
+    private Application app;
     private Callback<ArrayList<CPDeviceItem>> deviceListChangeCallback;
     private DialogManager dialogManager;
 
@@ -26,9 +26,9 @@ public class DeviceList {
         void call(T input);
     }
 
-    public DeviceList(ArrayList<CPDeviceItem> deviceItems, DialogManager dialogManager, Callback<CPDeviceItem> openDeviceCallback, Callback<ArrayList<CPDeviceItem>> deviceListChangeCallback) {
+    public DeviceList(ArrayList<CPDeviceItem> deviceItems, Application app, DialogManager dialogManager, Callback<ArrayList<CPDeviceItem>> deviceListChangeCallback) {
+        this.app = app;
         this.dialogManager = dialogManager;
-        this.openDeviceCallback = openDeviceCallback;
         this.deviceListChangeCallback = deviceListChangeCallback;
 
         if (!deviceItems.isEmpty()) {
@@ -99,6 +99,7 @@ public class DeviceList {
             if (dialogManager.showRemoveDeviceDialog(deviceItem.device.getName())) {
                 deviceList.remove(deviceItem.device);
                 deviceListChangeCallback.call(deviceList);
+                app.hideControlWindow(deviceItem.device);
 
                 contentPanel.remove(deviceItem.rootPanel);
                 contentPanel.revalidate();
@@ -110,7 +111,7 @@ public class DeviceList {
             }
         });
         deviceItem.openButton.addActionListener((ActionEvent event) -> {
-            openDeviceCallback.call(deviceItem.device);
+            app.showControlWindow(deviceItem.device);
         });
     }
 

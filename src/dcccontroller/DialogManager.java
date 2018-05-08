@@ -1,7 +1,5 @@
 package dcccontroller;
 
-import dcccontroller.model.CPDeviceItem;
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -39,7 +37,6 @@ public class DialogManager {
                 JOptionPane.NO_OPTION
         );
 
-        System.out.println(result);
         return (result == JOptionPane.NO_OPTION); // NO_OPTION == Delete
     }
 }

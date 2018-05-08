@@ -28,6 +28,7 @@ public class ControlWindow extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
+                System.out.println("Remove listeners");
                 content.destroy(); // Remove listeners
             }
         });

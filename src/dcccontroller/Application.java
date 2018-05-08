@@ -3,6 +3,7 @@ package dcccontroller;
 import dcccontroller.model.CPDeviceItem;
 
 import javax.swing.*;
+import java.awt.event.WindowEvent;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -31,6 +32,13 @@ public class Application {
             SwingUtilities.invokeLater(() -> {
                 deviceWindowMap.put(item, new ControlWindow(this, item));
             });
+        }
+    }
+
+    public void hideControlWindow(CPDeviceItem item) {
+        if (deviceWindowMap.containsKey(item)) {
+            ControlWindow window = deviceWindowMap.get(item);
+            window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING));
         }
     }
 
