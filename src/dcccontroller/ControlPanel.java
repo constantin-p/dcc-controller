@@ -4,6 +4,7 @@ import com.fazecast.jSerialComm.SerialPort;
 import dcccontroller.configuration.Configuration;
 import dcccontroller.configuration.ConfigurationManager;
 import dcccontroller.model.CPConfigurationSelectItem;
+import dcccontroller.model.CPFunctionItem;
 import dcccontroller.serial.SerialCommunicationHelper;
 import dcccontroller.util.Callback;
 import dcccontroller.util.Change;
@@ -33,6 +34,11 @@ public class ControlPanel {
     private SerialCommunicationHelper serialCommHelper = SerialCommunicationHelper.getInstance();
     private ControlWindow controlWindow;
     private ArrayList<Callback> destroyListeners = new ArrayList<>();
+
+
+    private JLabel placeholderLabel;
+    private JPanel contentPanel;
+    private ArrayList<CPFunctionItem> functionList = new ArrayList<>();
 
     // Speed Cache
     private int cacheReverseSpeed = 0;
@@ -78,7 +84,9 @@ public class ControlPanel {
 
             @Override
             public void setSelectedItem(Object anObject) {
-                if (!(anObject instanceof CPConfigurationSelectItem) || ((CPConfigurationSelectItem) anObject).isSelectable()) {
+                CPConfigurationSelectItem item = (CPConfigurationSelectItem) anObject;
+                if (item.isSelectable()) {
+                    setupFunctionsPane(item.getConfiguration());
                     super.setSelectedItem(anObject);
                 } else if (selectPlaceholder) {
                     // Allow this just once
@@ -153,14 +161,38 @@ public class ControlPanel {
         functionsScrollPanel.getViewport().setOpaque(false);
         functionsScrollPanel.setBorder(null);
 
-        JLabel placeholderLabel = new JLabel("No configuration selected");
+        contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+
+        placeholderLabel = new JLabel("No configuration selected");
         placeholderLabel.setForeground(Color.darkGray);
         placeholderLabel.setHorizontalAlignment(JLabel.CENTER);
-        functionsScrollPanel.getViewport().add(placeholderLabel);
+        showEmptyPlaceholder();
     }
 
-    private void createFunctionsPane() {
+    private void setupFunctionsPane(Configuration configuration) {
+        contentPanel.removeAll();
+        if (functionList.isEmpty()) {
+            functionsScrollPanel.setViewportView(contentPanel);
+        }
+        functionList = new ArrayList<CPFunctionItem>(configuration.getFunctions());
 
+        for (int i = 0; i < functionList.size(); i++) {
+            CPFunctionItem item = functionList.get(i);
+            FunctionItem functionItem = new FunctionItem(item, i);
+            functionItem.functionButton.addActionListener((ActionEvent event) -> {
+                serialCommHelper.sendCommand(controlWindow.device.getName(), item.getCommand());
+            });
+
+            contentPanel.add(functionItem.rootPanel);
+        }
+
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+    private void showEmptyPlaceholder() {
+        functionsScrollPanel.getViewport().add(placeholderLabel);
     }
 
     private void setupConfigurations() {

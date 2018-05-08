@@ -23,7 +23,6 @@ public class DeviceItem {
     }
 
     private void createUIComponents() {
-        // TODO: place custom component creation code here
 
         nameLabel = new JLabel();
         nameLabel.setForeground(Color.darkGray);

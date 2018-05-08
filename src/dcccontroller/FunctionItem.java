@@ -3,22 +3,29 @@ package dcccontroller;
 import dcccontroller.model.CPFunctionItem;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class FunctionItem {
-    private JPanel rootPanel;
+    public JPanel rootPanel;
     private JLabel functionLabel;
-    private JButton functionButton;
+    public JButton functionButton;
 
     private CPFunctionItem function;
+    private int index;
 
-    public FunctionItem(CPFunctionItem function) {
+    public FunctionItem(CPFunctionItem function, int index) {
         this.function = function;
+        this.index = index;
+
+        functionLabel.setText("F" + index + ": " + function.getDisplayName());
+        functionButton.setText("F" + index);
     }
 
     private void createUIComponents() {
-        // TODO: place custom component creation code here
 
-        functionLabel = new JLabel(function.getDisplayName());
-        functionButton = new JButton("F");
+        functionLabel = new JLabel();
+        functionLabel.setForeground(Color.darkGray);
+        functionButton = new JButton();
+        functionButton.setForeground(Color.black);
     }
 }

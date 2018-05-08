@@ -5,7 +5,7 @@ import dcccontroller.model.CPFunctionItem;
 import java.io.Serializable;
 import java.util.List;
 
-public class Configuration implements Serializable {
+public class Configuration {
     private String name;
     private List<CPFunctionItem> functions;
 
