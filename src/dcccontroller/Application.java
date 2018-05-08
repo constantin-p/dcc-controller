@@ -2,6 +2,7 @@ package dcccontroller;
 
 import dcccontroller.configuration.ConfigurationManager;
 import dcccontroller.model.CPDeviceItem;
+import dcccontroller.serial.SerialCommunicationHelper;
 
 import javax.swing.*;
 import java.awt.event.WindowEvent;
@@ -17,12 +18,23 @@ import java.util.prefs.Preferences;
 public class Application {
     private Preferences prefs = Preferences.userNodeForPackage(Application.class);
     private final String PREF_DEVICE_LIST_KEY = "PREF_DEVICE_LIST_KEY";
+    private final String PREF_ACTIVE_PORT_KEY = "PREF_ACTIVE_PORT_KEY";
 
     private Map<CPDeviceItem, ControlWindow> deviceWindowMap = new HashMap<>();
+    private SerialCommunicationHelper serialCommunicationHelper = SerialCommunicationHelper.getInstance();
 
     public Application() {
         SwingUtilities.invokeLater(() -> {
             new DeviceListWindow(this);
+            String port = getPreferenceAsString(PREF_ACTIVE_PORT_KEY);
+            if (port != null) {
+                serialCommunicationHelper.setActivePortFromPref(port);
+            }
+            serialCommunicationHelper.addActivePortChangeListener(activePort -> {
+                if (activePort != null) {
+                    setPreferenceAsString(PREF_ACTIVE_PORT_KEY, activePort.getSystemPortName());
+                }
+            });
         });
     }
 

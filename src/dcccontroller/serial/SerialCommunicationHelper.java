@@ -5,6 +5,7 @@ import dcccontroller.util.Change;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class SerialCommunicationHelper {
     private static SerialCommunicationHelper instance = null;
@@ -12,11 +13,13 @@ public class SerialCommunicationHelper {
     private SerialPort[] ports = {};
     private SerialPort activePort = null;
     private final String COMMAND_PREFIX = "DCC_COMMAND:";
+    private final int BAUD_RATE = 9600;
 
     // Notification system
     private ArrayList<Change<ArrayList<SerialPort>>> portsChangeListeners = new ArrayList<>();
     private ArrayList<Change<SerialPort>> activePortChangeListeners = new ArrayList<>();
 
+    private Thread listenThread;
 
     private SerialCommunicationHelper() {}
 
@@ -25,6 +28,20 @@ public class SerialCommunicationHelper {
             instance = new SerialCommunicationHelper();
         }
         return instance;
+    }
+
+    public void setActivePortFromPref(String portName) {
+        refreshPorts();
+        if (ports != null && portName != null) {
+            for (int i = 0; i < ports.length; i++) {
+                if (ports[i].getSystemPortName().equals(portName)) {
+                    if (activePort == null || !activePort.getSystemPortName().equals(portName)) {
+                        setActivePort(ports[i]);
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     public ArrayList<SerialPort> getPorts() {
@@ -36,6 +53,15 @@ public class SerialCommunicationHelper {
     }
 
     public void setActivePort(SerialPort activePort) {
+        if (this.activePort != null) {
+            this.activePort.removeDataListener();
+            this.activePort.closePort();
+        }
+        if (activePort != null) {
+            activePort.setBaudRate(BAUD_RATE);
+            activePort.openPort();
+            listenForMessages(1);
+        }
         this.activePort = activePort;
         activePortChangeListeners.forEach((Change<SerialPort> listener) -> listener.call(activePort));
     }
@@ -76,7 +102,55 @@ public class SerialCommunicationHelper {
     }
 
     public void sendCommand(String address, String command) {
-        System.out.println("NEW COMMAND:");
-        System.out.println(COMMAND_PREFIX + address + ":" + command);
+        System.out.print("→ out :");
+        String message = COMMAND_PREFIX + address + ":" + command;
+        System.out.println(message);
+        sendMessage(message);
+    }
+
+    private void sendMessage(String message) {
+        if (activePort != null) {
+            activePort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
+
+            byte[] payload = (message + "\n").getBytes();
+            try {
+                activePort.writeBytes(payload, payload.length);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            listenForMessages(1);
+        }
+    }
+
+    private void listenForMessages(int lines) {
+        if (listenThread != null) {
+            listenThread.interrupt();
+        }
+        listenThread = new Thread(){
+            public void run(){
+                receiveMessage(1);
+            }
+        };
+
+        listenThread.start();
+    }
+
+    private void receiveMessage(int lines) {
+        if (activePort != null) {
+            activePort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
+            Scanner in = new Scanner(activePort.getInputStream());
+            int count = 0;
+            try {
+                while(count <= lines && in.hasNextLine()) {
+                    String line = in.nextLine();
+                    System.out.println("← in  :" + line);
+                    count++;
+                }
+
+                in.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

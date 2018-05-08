@@ -47,15 +47,17 @@ public class ConfigurationManager {
 
     // Import
     public void importConfigurationFiles(List<File> files) {
-        files.forEach((File file) -> {
-            if (file != null) {
-                Configuration config = createConfiguration(file);
-                if (config != null) {
-                    configurations.add(config);
-                    configurationsChangeListeners.forEach(listener -> listener.call(configurations));
+        if (files != null) {
+            files.forEach((File file) -> {
+                if (file != null) {
+                    Configuration config = createConfiguration(file);
+                    if (config != null) {
+                        configurations.add(config);
+                        configurationsChangeListeners.forEach(listener -> listener.call(configurations));
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
 
