@@ -1,7 +1,6 @@
 package dcccontroller;
 
 import dcccontroller.model.CPDeviceItem;
-import dcccontroller.util.Change;
 
 import javax.swing.*;
 import java.awt.*;

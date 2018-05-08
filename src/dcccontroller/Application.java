@@ -1,5 +1,6 @@
 package dcccontroller;
 
+import dcccontroller.configuration.ConfigurationManager;
 import dcccontroller.model.CPDeviceItem;
 
 import javax.swing.*;

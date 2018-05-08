@@ -1,11 +1,13 @@
 package dcccontroller;
 
+import dcccontroller.configuration.ConfigurationManager;
 import dcccontroller.model.CPDeviceItem;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.ArrayList;
 
 public class DeviceListWindow extends JFrame {
@@ -56,13 +58,22 @@ public class DeviceListWindow extends JFrame {
         // Import configuration
         JMenuItem importConfigMenuItem = new JMenuItem("Import configuration");
         importConfigMenuItem.addActionListener((ActionEvent event) -> {
-            System.out.println("Import configuration");
+            dialogManager.showConfigurationsFilePicker((java.util.List<File> files) -> {
+                ConfigurationManager.getInstance().importConfigurationFiles(files);
+            });
+        });
+
+        // Configuration file example
+        JMenuItem configFileTemplateMenuItem = new JMenuItem("Configuration File Example");
+        configFileTemplateMenuItem.addActionListener((ActionEvent event) -> {
+            dialogManager.showConfigurationFileTemplate();
         });
 
 
         fileMenu.add(newDeviceMenuItem);
         fileMenu.addSeparator();
         fileMenu.add(importConfigMenuItem);
+        fileMenu.add(configFileTemplateMenuItem);
         return fileMenu;
     }
 

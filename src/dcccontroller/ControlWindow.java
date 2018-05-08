@@ -1,6 +1,7 @@
 package dcccontroller;
 
 import com.fazecast.jSerialComm.SerialPort;
+import dcccontroller.configuration.ConfigurationManager;
 import dcccontroller.model.CPDeviceItem;
 import dcccontroller.serial.SerialCommunicationHelper;
 import dcccontroller.util.Callback;
@@ -9,12 +10,13 @@ import dcccontroller.util.Change;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.util.ArrayList;
 
 public class ControlWindow extends JFrame {
 
-    private DialogManager dialogManager = new DialogManager(this);
-    private CPDeviceItem device;
+    public DialogManager dialogManager = new DialogManager(this);
+    public CPDeviceItem device;
     private DeviceListWindow deviceListWindow;
 
     private ArrayList<Callback> destroyListeners = new ArrayList<>();
@@ -27,7 +29,7 @@ public class ControlWindow extends JFrame {
         createMenuBar();
 
 
-        ControlPanel content = new ControlPanel(device);
+        ControlPanel content = new ControlPanel(this);
         setContentPane(content.rootPanel);
         addWindowListener(new WindowAdapter() {
             @Override
@@ -51,7 +53,6 @@ public class ControlWindow extends JFrame {
         destroyListeners.forEach((Callback listener) -> listener.call());
     }
 
-
     private void createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
@@ -74,15 +75,24 @@ public class ControlWindow extends JFrame {
         });
 
         // Import configuration
-        JMenuItem importConfigMenuItem = new JMenuItem("Import configuration");
+        JMenuItem importConfigMenuItem = new JMenuItem("Import Configuration");
         importConfigMenuItem.addActionListener((ActionEvent event) -> {
-            System.out.println("Import configuration");
+            dialogManager.showConfigurationsFilePicker((java.util.List<File> files) -> {
+                ConfigurationManager.getInstance().importConfigurationFiles(files);
+            });
+        });
+
+        // Configuration file example
+        JMenuItem configFileTemplateMenuItem = new JMenuItem("Configuration File Example");
+        configFileTemplateMenuItem.addActionListener((ActionEvent event) -> {
+            dialogManager.showConfigurationFileTemplate();
         });
 
 
         fileMenu.add(newDeviceMenuItem);
         fileMenu.addSeparator();
         fileMenu.add(importConfigMenuItem);
+        fileMenu.add(configFileTemplateMenuItem);
         return fileMenu;
     }
 

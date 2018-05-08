@@ -19,6 +19,6 @@ public class FunctionItem {
         // TODO: place custom component creation code here
 
         functionLabel = new JLabel(function.getDisplayName());
-        functionButton = new JButton("F" + function.getOrder());
+        functionButton = new JButton("F");
     }
 }
