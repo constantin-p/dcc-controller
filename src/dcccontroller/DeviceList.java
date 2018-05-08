@@ -19,15 +19,11 @@ public class DeviceList {
     private JPanel contentPanel;
     private ArrayList<CPDeviceItem> deviceList = new ArrayList<>();
 
-    private Application app;
-    private Change<ArrayList<CPDeviceItem>> deviceListChangeCallback;
-    private DialogManager dialogManager;
+    private DeviceListWindow deviceListWindow;
 
 
-    public DeviceList(ArrayList<CPDeviceItem> deviceItems, Application app, DialogManager dialogManager, Change<ArrayList<CPDeviceItem>> deviceListChangeCallback) {
-        this.app = app;
-        this.dialogManager = dialogManager;
-        this.deviceListChangeCallback = deviceListChangeCallback;
+    public DeviceList(DeviceListWindow deviceListWindow, ArrayList<CPDeviceItem> deviceItems) {
+        this.deviceListWindow = deviceListWindow;
 
         if (!deviceItems.isEmpty()) {
             if (deviceList.isEmpty()) {
@@ -44,10 +40,7 @@ public class DeviceList {
         }
 
         addDeviceButton.addActionListener((ActionEvent event) -> {
-            String name = dialogManager.showAddDeviceDialog();
-            if (name != null) {
-                addDeviceItem(new CPDeviceItem(name, CPDeviceItem.generateTimestamp()));
-            }
+            deviceListWindow.createDevice(deviceListWindow.dialogManager.showAddDeviceDialog());
         });
     }
 
@@ -82,7 +75,7 @@ public class DeviceList {
         }
 
         deviceList.add(item);
-        deviceListChangeCallback.call(deviceList);
+        deviceListWindow.app.setDevices(deviceList);
 
         DeviceItem deviceItem = new DeviceItem(item);
         addDeviceItemListeners(deviceItem);
@@ -94,10 +87,10 @@ public class DeviceList {
 
     private void addDeviceItemListeners(DeviceItem deviceItem) {
         deviceItem.deleteButton.addActionListener((ActionEvent event) -> {
-            if (dialogManager.showRemoveDeviceDialog(deviceItem.device.getName())) {
+            if (deviceListWindow.dialogManager.showRemoveDeviceDialog(deviceItem.device.getName())) {
                 deviceList.remove(deviceItem.device);
-                deviceListChangeCallback.call(deviceList);
-                app.hideControlWindow(deviceItem.device);
+                deviceListWindow.app.setDevices(deviceList);
+                deviceListWindow.app.hideControlWindow(deviceItem.device);
 
                 contentPanel.remove(deviceItem.rootPanel);
                 contentPanel.revalidate();
@@ -109,7 +102,7 @@ public class DeviceList {
             }
         });
         deviceItem.openButton.addActionListener((ActionEvent event) -> {
-            app.showControlWindow(deviceItem.device);
+            deviceListWindow.app.showControlWindow(deviceItem.device, deviceListWindow);
         });
     }
 

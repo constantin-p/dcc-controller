@@ -10,8 +10,8 @@ import java.util.ArrayList;
 
 public class DeviceListWindow extends JFrame {
 
-    private Application app;
-    private DialogManager dialogManager = new DialogManager(this);
+    public Application app;
+    public DialogManager dialogManager = new DialogManager(this);
     private DeviceList content;
 
     public DeviceListWindow(Application app) {
@@ -22,10 +22,7 @@ public class DeviceListWindow extends JFrame {
 
         ArrayList<CPDeviceItem> deviceItems = app.getDevices();
 
-        content = new DeviceList(deviceItems, app, dialogManager, (ArrayList<CPDeviceItem> item) -> {
-            // deviceListChangeCallback
-            app.setDevices(item);
-        });
+        content = new DeviceList(this, deviceItems );
         setContentPane(content.rootPanel);
 
         // Arrange the components inside the window
@@ -51,14 +48,9 @@ public class DeviceListWindow extends JFrame {
         // New Device
         JMenuItem newDeviceMenuItem = new JMenuItem("New Device");
         newDeviceMenuItem.setMnemonic(KeyEvent.VK_N);
-        newDeviceMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
-                Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        newDeviceMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         newDeviceMenuItem.addActionListener((ActionEvent event) -> {
-
-                String name = dialogManager.showAddDeviceDialog();
-                if (name != null) {
-                    content.addDeviceItem(new CPDeviceItem(name, CPDeviceItem.generateTimestamp()));
-                }
+            createDevice(dialogManager.showAddDeviceDialog());
         });
 
         // Import configuration
@@ -72,5 +64,19 @@ public class DeviceListWindow extends JFrame {
         fileMenu.addSeparator();
         fileMenu.add(importConfigMenuItem);
         return fileMenu;
+    }
+
+    public void createDevice(String name) {
+        if (name != null) {
+            content.addDeviceItem(new CPDeviceItem(name, CPDeviceItem.generateTimestamp()));
+        }
+    }
+
+    public void createAndOpenDevice(String name) {
+        if (name != null) {
+            CPDeviceItem device = new CPDeviceItem(name, CPDeviceItem.generateTimestamp());
+            content.addDeviceItem(device);
+            app.showControlWindow(device, this);
+        }
     }
 }

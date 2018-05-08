@@ -25,12 +25,12 @@ public class Application {
         });
     }
 
-    public void showControlWindow(CPDeviceItem item) {
+    public void showControlWindow(CPDeviceItem item, DeviceListWindow deviceListWindow) {
         if (deviceWindowMap.containsKey(item)) {
             deviceWindowMap.get(item).toFront();
         } else {
             SwingUtilities.invokeLater(() -> {
-                deviceWindowMap.put(item, new ControlWindow(this, item));
+                deviceWindowMap.put(item, new ControlWindow(deviceListWindow, item));
             });
         }
     }

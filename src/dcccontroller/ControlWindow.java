@@ -13,13 +13,14 @@ import java.util.ArrayList;
 
 public class ControlWindow extends JFrame {
 
-    private Application app;
+    private DialogManager dialogManager = new DialogManager(this);
     private CPDeviceItem device;
+    private DeviceListWindow deviceListWindow;
 
     private ArrayList<Callback> destroyListeners = new ArrayList<>();
 
-    public ControlWindow(Application app, CPDeviceItem device) {
-        this.app = app;
+    public ControlWindow(DeviceListWindow deviceListWindow, CPDeviceItem device) {
+        this.deviceListWindow = deviceListWindow;
         this.device = device;
 
         setTitle(Main.APP_NAME + " - (" + device.getName() + ")");
@@ -69,7 +70,7 @@ public class ControlWindow extends JFrame {
         newDeviceMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         newDeviceMenuItem.addActionListener((ActionEvent event) -> {
-            System.out.println("New Device");
+            deviceListWindow.createAndOpenDevice(dialogManager.showAddDeviceDialog());
         });
 
         // Import configuration
@@ -114,7 +115,7 @@ public class ControlWindow extends JFrame {
 
     private JMenu createPortsSubmenu() {
         JMenu menu = new JMenu("Port:");
-        JMenuItem placeholderMenuItem = new JMenuItem("Serial Ports: Loading");
+        JMenuItem placeholderMenuItem = new JMenuItem("Serial Ports: Loading...");
         placeholderMenuItem.setEnabled(false);
 
 
