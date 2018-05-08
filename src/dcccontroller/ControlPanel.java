@@ -260,6 +260,7 @@ public class ControlPanel {
                         forwardSpeedSlider.setValue(0);
                     }
                     serialCommHelper.sendCommand(controlWindow.device.getName(), "REVERSE:" + currentValue);
+                    displaySecondLine.setText("Speed: " + (currentValue == 0 ? "-": "(Reverse) " + currentValue));
                 }
             }
         });
@@ -275,6 +276,7 @@ public class ControlPanel {
                         reverseSpeedSlider.setValue(0);
                     }
                     serialCommHelper.sendCommand(controlWindow.device.getName(), "FORWARD:" + currentValue);
+                    displaySecondLine.setText("Speed: " + (currentValue == 0 ? "-": "(Forward) " + currentValue));
                 }
             }
         });
