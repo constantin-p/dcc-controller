@@ -27,7 +27,7 @@ public class ControlWindow extends JFrame {
         createMenuBar();
 
 
-        ControlPanel content = new ControlPanel();
+        ControlPanel content = new ControlPanel(device);
         setContentPane(content.rootPanel);
         addWindowListener(new WindowAdapter() {
             @Override

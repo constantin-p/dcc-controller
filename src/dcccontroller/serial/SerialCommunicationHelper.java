@@ -11,6 +11,7 @@ public class SerialCommunicationHelper {
 
     private SerialPort[] ports = {};
     private SerialPort activePort = null;
+    private final String COMMAND_PREFIX = "DCC_COMMAND:";
 
     // Notification system
     private ArrayList<Change<ArrayList<SerialPort>>> portsChangeListeners = new ArrayList<>();
@@ -72,5 +73,10 @@ public class SerialCommunicationHelper {
         if (!activePortExists) {
             setActivePort(null);
         }
+    }
+
+    public void sendCommand(String address, String command) {
+        System.out.println("NEW COMMAND:");
+        System.out.println(COMMAND_PREFIX + address + ":" + command);
     }
 }

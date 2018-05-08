@@ -1,12 +1,14 @@
 package dcccontroller;
 
 import com.fazecast.jSerialComm.SerialPort;
+import dcccontroller.model.CPDeviceItem;
 import dcccontroller.model.CPSelectItem;
 import dcccontroller.serial.SerialCommunicationHelper;
 import dcccontroller.util.Callback;
 import dcccontroller.util.Change;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Dictionary;
@@ -18,35 +20,26 @@ public class ControlPanel {
     private JLabel displaySecondLine;
     private JComboBox functionsComboBox;
     private JButton addConfigurationButton;
-    private JTabbedPane tabbedPane1;
+    private JTabbedPane speedTabbedPane;
     private JSlider reverseSpeedSlider;
     private JSlider forwardSpeedSlider;
     private JScrollPane functionsScrollPanel;
     private JLabel activePortLabel;
 
+    private SerialCommunicationHelper serialCommHelper = SerialCommunicationHelper.getInstance();
+    private CPDeviceItem device;
     private ArrayList<Callback> destroyListeners = new ArrayList<>();
 
-    public ControlPanel() {
-        SerialCommunicationHelper serialCommHelper = SerialCommunicationHelper.getInstance();
+    // Speed Cache
+    private int cacheReverseSpeed = 0;
+    private int cacheForwardSpeed = 0;
 
-        Change<SerialPort> activePortChangeListener = (SerialPort activePort) -> {
-            if (activePort == null) {
-                activePortLabel.setText("No Serial Port selected");
-            } else {
-                activePortLabel.setText("Serial Port: \"" + activePort.getSystemPortName() + "\"");
-            }
-        };
+    public ControlPanel(CPDeviceItem device) {
+        this.device = device;
 
-        SerialPort activePort = serialCommHelper.getActivePort();
-        if (activePort != null) {
-            activePortChangeListener.call(activePort);
-        }
-
-        serialCommHelper.addActivePortChangeListener(activePortChangeListener);
-
-        destroyListeners.add(() -> {
-            serialCommHelper.removeActivePortChangeListener(activePortChangeListener);
-        });
+        displayFirstLine.setText("Device: " + device.getName());
+        setupPortLabel();
+        setupSpeedSliders();
     }
 
     private void createUIComponents() {
@@ -96,6 +89,7 @@ public class ControlPanel {
         reverseSpeedSlider.setMajorTickSpacing(32);
         reverseSpeedSlider.setPaintTicks(true);
         reverseSpeedSlider.setSnapToTicks(true);
+        reverseSpeedSlider.setValue(0);
 
         // Labels
         Dictionary<Integer, Component> labelTable = new Hashtable<Integer, Component>();
@@ -123,6 +117,7 @@ public class ControlPanel {
         forwardSpeedSlider.setMajorTickSpacing(32);
         forwardSpeedSlider.setPaintTicks(true);
         forwardSpeedSlider.setSnapToTicks(true);
+        forwardSpeedSlider.setValue(0);
 
         // Labels
         Dictionary<Integer, Component> labelTable = new Hashtable<Integer, Component>();
@@ -157,5 +152,63 @@ public class ControlPanel {
 
     private void createFunctionsPane() {
 
+    }
+
+    private void setupPortLabel() {
+        Change<SerialPort> activePortChangeListener = (SerialPort activePort) -> {
+            if (activePort == null) {
+                activePortLabel.setText("No Serial Port selected");
+            } else {
+                activePortLabel.setText("Serial Port: \"" + activePort.getSystemPortName() + "\"");
+            }
+        };
+
+        SerialPort activePort = serialCommHelper.getActivePort();
+        if (activePort != null) {
+            activePortChangeListener.call(activePort);
+        }
+
+        serialCommHelper.addActivePortChangeListener(activePortChangeListener);
+
+        destroyListeners.add(() -> {
+            serialCommHelper.removeActivePortChangeListener(activePortChangeListener);
+        });
+    }
+
+    private void setupSpeedSliders() {
+        // Reverse
+        reverseSpeedSlider.addChangeListener((ChangeEvent event) -> {
+            int currentValue = reverseSpeedSlider.getValue();
+            if (cacheReverseSpeed != currentValue) {
+                cacheReverseSpeed = currentValue;
+
+
+                if (!isForwardSelected()) {
+                    if (forwardSpeedSlider.getValue() != 0) {
+                        forwardSpeedSlider.setValue(0);
+                    }
+                    serialCommHelper.sendCommand(device.getName(), "REVERSE:" + currentValue);
+                }
+            }
+        });
+        // Forward
+        forwardSpeedSlider.addChangeListener((ChangeEvent event) -> {
+            int currentValue = forwardSpeedSlider.getValue();
+            if (cacheForwardSpeed != currentValue) {
+                cacheForwardSpeed = currentValue;
+
+
+                if (isForwardSelected()) {
+                    if (reverseSpeedSlider.getValue() != 0) {
+                        reverseSpeedSlider.setValue(0);
+                    }
+                    serialCommHelper.sendCommand(device.getName(), "FORWARD:" + currentValue);
+                }
+            }
+        });
+    }
+
+    private boolean isForwardSelected() {
+        return speedTabbedPane.getSelectedIndex() == 1; // 0 - Reverse, 1 - Forward
     }
 }
