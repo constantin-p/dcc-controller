@@ -1,9 +1,14 @@
 package dcccontroller;
 
+import com.fazecast.jSerialComm.SerialPort;
 import dcccontroller.model.CPSelectItem;
+import dcccontroller.serial.SerialCommunicationHelper;
+import dcccontroller.util.Callback;
+import dcccontroller.util.Change;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -17,6 +22,32 @@ public class ControlPanel {
     private JSlider reverseSpeedSlider;
     private JSlider forwardSpeedSlider;
     private JScrollPane functionsScrollPanel;
+    private JLabel activePortLabel;
+
+    private ArrayList<Callback> destroyListeners = new ArrayList<>();
+
+    public ControlPanel() {
+        SerialCommunicationHelper serialCommHelper = SerialCommunicationHelper.getInstance();
+
+        Change<SerialPort> activePortChangeListener = (SerialPort activePort) -> {
+            if (activePort == null) {
+                activePortLabel.setText("No Serial Port selected");
+            } else {
+                activePortLabel.setText("Serial Port: \"" + activePort.getSystemPortName() + "\"");
+            }
+        };
+
+        SerialPort activePort = serialCommHelper.getActivePort();
+        if (activePort != null) {
+            activePortChangeListener.call(activePort);
+        }
+
+        serialCommHelper.addActivePortChangeListener(activePortChangeListener);
+
+        destroyListeners.add(() -> {
+            serialCommHelper.removeActivePortChangeListener(activePortChangeListener);
+        });
+    }
 
     private void createUIComponents() {
         createConfigSelect();
@@ -32,7 +63,7 @@ public class ControlPanel {
     }
 
     public void destroy() {
-        // TODO: Remove listeners
+        destroyListeners.forEach((Callback listener) -> listener.call());
     }
 
     // Helpers

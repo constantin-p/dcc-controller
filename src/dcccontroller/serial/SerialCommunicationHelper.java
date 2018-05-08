@@ -1,6 +1,7 @@
 package dcccontroller.serial;
 
 import com.fazecast.jSerialComm.SerialPort;
+import dcccontroller.util.Change;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,16 +9,13 @@ import java.util.Arrays;
 public class SerialCommunicationHelper {
     private static SerialCommunicationHelper instance = null;
 
-    private ArrayList<SerialPort> ports = new ArrayList<>();
-    private SerialPort currentPort = null;
+    private SerialPort[] ports = {};
+    private SerialPort activePort = null;
 
     // Notification system
     private ArrayList<Change<ArrayList<SerialPort>>> portsChangeListeners = new ArrayList<>();
-    private ArrayList<Change<SerialPort>> currentPortChangeListeners = new ArrayList<>();
+    private ArrayList<Change<SerialPort>> activePortChangeListeners = new ArrayList<>();
 
-    interface Change<T> {
-        void call(T input);
-    }
 
     private SerialCommunicationHelper() {}
 
@@ -29,7 +27,20 @@ public class SerialCommunicationHelper {
     }
 
     public ArrayList<SerialPort> getPorts() {
-        return ports;
+        return new ArrayList<>(Arrays.asList(ports));
+    }
+
+    public SerialPort getActivePort() {
+        return activePort;
+    }
+
+    public void setActivePort(SerialPort activePort) {
+        this.activePort = activePort;
+        activePortChangeListeners.forEach((Change<SerialPort> listener) -> listener.call(activePort));
+    }
+
+    public boolean portIsActive(SerialPort port) {
+        return (activePort != null && port != null && port.getDescriptivePortName().equals(activePort.getDescriptivePortName()));
     }
 
     public void addPortsChangeListener(Change<ArrayList<SerialPort>> listener) {
@@ -39,20 +50,27 @@ public class SerialCommunicationHelper {
         portsChangeListeners.remove(listener);
     }
 
-    public void addCurrentPortChangeListener(Change<SerialPort> listener) {
-        currentPortChangeListeners.add(listener);
+    public void addActivePortChangeListener(Change<SerialPort> listener) {
+        activePortChangeListeners.add(listener);
     }
-    public void removeCurrentPortChangeListener(Change<SerialPort> listener) {
-        currentPortChangeListeners.remove(listener);
+    public void removeActivePortChangeListener(Change<SerialPort> listener) {
+        activePortChangeListeners.remove(listener);
     }
 
-    public void searchPorts() {
-        ports.clear();
-        ports.addAll(Arrays.asList(SerialPort.getCommPorts()));
-        ports.forEach((SerialPort port) -> {
-            System.out.println(port.getSystemPortName());
-            System.out.println(port.getDescriptivePortName());
-            System.out.println(port.getPortDescription());
-        });
+    public void refreshPorts() {
+        boolean activePortExists = false;
+        ports = SerialPort.getCommPorts();
+        portsChangeListeners.forEach((Change<ArrayList<SerialPort>> listener) -> listener.call(getPorts()));
+
+        for (SerialPort port: ports) {
+            if (activePort != null && port.getDescriptivePortName().equals(activePort.getDescriptivePortName())) {
+                activePortExists = true;
+                break;
+            }
+        }
+
+        if (!activePortExists) {
+            setActivePort(null);
+        }
     }
 }

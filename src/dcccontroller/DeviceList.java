@@ -1,6 +1,7 @@
 package dcccontroller;
 
 import dcccontroller.model.CPDeviceItem;
+import dcccontroller.util.Change;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,14 +20,11 @@ public class DeviceList {
     private ArrayList<CPDeviceItem> deviceList = new ArrayList<>();
 
     private Application app;
-    private Callback<ArrayList<CPDeviceItem>> deviceListChangeCallback;
+    private Change<ArrayList<CPDeviceItem>> deviceListChangeCallback;
     private DialogManager dialogManager;
 
-    interface Callback<T> {
-        void call(T input);
-    }
 
-    public DeviceList(ArrayList<CPDeviceItem> deviceItems, Application app, DialogManager dialogManager, Callback<ArrayList<CPDeviceItem>> deviceListChangeCallback) {
+    public DeviceList(ArrayList<CPDeviceItem> deviceItems, Application app, DialogManager dialogManager, Change<ArrayList<CPDeviceItem>> deviceListChangeCallback) {
         this.app = app;
         this.dialogManager = dialogManager;
         this.deviceListChangeCallback = deviceListChangeCallback;

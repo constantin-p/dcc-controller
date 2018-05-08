@@ -1,19 +1,22 @@
 package dcccontroller;
 
+import com.fazecast.jSerialComm.SerialPort;
 import dcccontroller.model.CPDeviceItem;
 import dcccontroller.serial.SerialCommunicationHelper;
+import dcccontroller.util.Callback;
+import dcccontroller.util.Change;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
+import java.util.ArrayList;
 
 public class ControlWindow extends JFrame {
 
     private Application app;
     private CPDeviceItem device;
+
+    private ArrayList<Callback> destroyListeners = new ArrayList<>();
 
     public ControlWindow(Application app, CPDeviceItem device) {
         this.app = app;
@@ -28,8 +31,9 @@ public class ControlWindow extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
-                System.out.println("Remove listeners");
-                content.destroy(); // Remove listeners
+                // Remove listeners
+                content.destroy();
+                destroy();
             }
         });
 
@@ -40,6 +44,10 @@ public class ControlWindow extends JFrame {
         setLocationRelativeTo(null);
         // By default, the window is not visible. Make it visible.
         setVisible(true);
+    }
+
+    private void destroy() {
+        destroyListeners.forEach((Callback listener) -> listener.call());
     }
 
 
@@ -81,39 +89,83 @@ public class ControlWindow extends JFrame {
         // Tools
         JMenu toolsMenu = new JMenu("Tools");
 
-        toolsMenu.add(createPortsSubmenu());
+        JMenu portsMenu = createPortsSubmenu();
+        toolsMenu.add(portsMenu);
+
+        SerialCommunicationHelper serialCommHelper = SerialCommunicationHelper.getInstance();
+        Change<SerialPort> activePortChangeListener = (SerialPort activePort) -> {
+            updatePortsSubmenu(portsMenu, serialCommHelper.getPorts());
+        };
+        Change<ArrayList<SerialPort>> portsChangeListener = (ArrayList<SerialPort> ports) -> {
+            updatePortsSubmenu(portsMenu, ports);
+        };
+
+        serialCommHelper.addActivePortChangeListener(activePortChangeListener);
+        serialCommHelper.addPortsChangeListener(portsChangeListener);
+
+        destroyListeners.add(() -> {
+            serialCommHelper.removeActivePortChangeListener(activePortChangeListener);
+            serialCommHelper.removePortsChangeListener(portsChangeListener);
+        });
+
+        serialCommHelper.refreshPorts();
         return toolsMenu;
     }
 
     private JMenu createPortsSubmenu() {
         JMenu menu = new JMenu("Port:");
-        JMenuItem placeholderMenuItem = new JMenuItem("Serial Ports");
+        JMenuItem placeholderMenuItem = new JMenuItem("Serial Ports: Loading");
         placeholderMenuItem.setEnabled(false);
-
-        ButtonGroup serialPorts = new ButtonGroup();
-
-        JRadioButtonMenuItem radioAction1 = new JRadioButtonMenuItem(
-                "Radio Button1");
-        JRadioButtonMenuItem radioAction2 = new JRadioButtonMenuItem(
-                "Radio Button2");
-        serialPorts.add(radioAction1);
-        serialPorts.add(radioAction2);
-
 
 
         JMenuItem refreshMenuItem = new JMenuItem("Refresh Ports");
         refreshMenuItem.addActionListener((ActionEvent event) -> {
             System.out.println("Refresh Ports");
-            SerialCommunicationHelper.getInstance().searchPorts();
+            SerialCommunicationHelper.getInstance().refreshPorts();
         });
 
         menu.add(placeholderMenuItem);
-        menu.add(radioAction1);
-        menu.add(radioAction2);
         menu.addSeparator();
         menu.add(refreshMenuItem);
 
         return menu;
     }
 
+    private void updatePortsSubmenu(JMenu menu, ArrayList<SerialPort> availablePorts) {
+        SerialCommunicationHelper serialCommHelper = SerialCommunicationHelper.getInstance();
+
+        menu.setText("Port:");
+        JMenuItem placeholderMenuItem = new JMenuItem("Serial Ports");
+        placeholderMenuItem.setEnabled(false);
+
+        menu.removeAll();
+        menu.add(placeholderMenuItem);
+
+        ButtonGroup serialPorts = new ButtonGroup();
+        availablePorts.forEach((SerialPort port) -> {
+            JRadioButtonMenuItem portOption = new JRadioButtonMenuItem("["+ port.getSystemPortName() +"] " + port.getDescriptivePortName());
+            if (serialCommHelper.portIsActive(port)) {
+                portOption.setSelected(true);
+                menu.setText("Port: \"" + port.getSystemPortName() + "\"");
+            }
+            serialPorts.add(portOption);
+            menu.add(portOption);
+
+            portOption.addItemListener((ItemEvent event) -> {
+                if (event.getStateChange() == ItemEvent.SELECTED && !serialCommHelper.portIsActive(port)) {
+                    serialCommHelper.setActivePort(port);
+                }
+            });
+        });
+
+
+        JMenuItem refreshMenuItem = new JMenuItem("Refresh Ports");
+        refreshMenuItem.addActionListener((ActionEvent event) -> {
+            System.out.println("Refresh Ports");
+            SerialCommunicationHelper.getInstance().refreshPorts();
+        });
+
+        menu.addSeparator();
+        menu.add(refreshMenuItem);
+    }
 }

@@ -39,6 +39,7 @@ public class Application {
         if (deviceWindowMap.containsKey(item)) {
             ControlWindow window = deviceWindowMap.get(item);
             window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING));
+            deviceWindowMap.remove(item);
         }
     }
 
