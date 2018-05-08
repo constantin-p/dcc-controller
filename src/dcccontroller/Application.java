@@ -8,11 +8,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 public class Application {
     private Preferences prefs = Preferences.userNodeForPackage(Application.class);
     private final String PREF_DEVICE_LIST_KEY = "PREF_DEVICE_LIST_KEY";
+
+    private Map<CPDeviceItem, ControlWindow> deviceWindowMap = new HashMap<>();
 
     public Application() {
         SwingUtilities.invokeLater(() -> {
@@ -21,9 +25,13 @@ public class Application {
     }
 
     public void showControlWindow(CPDeviceItem item) {
-        SwingUtilities.invokeLater(() -> {
-            new ControlWindow(this, item);
-        });
+        if (deviceWindowMap.containsKey(item)) {
+            deviceWindowMap.get(item).toFront();
+        } else {
+            SwingUtilities.invokeLater(() -> {
+                deviceWindowMap.put(item, new ControlWindow(this, item));
+            });
+        }
     }
 
     public void setDevices(ArrayList<CPDeviceItem> items) {
