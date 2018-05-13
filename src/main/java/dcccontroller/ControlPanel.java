@@ -101,9 +101,9 @@ public class ControlPanel {
 
     private void createReverseSpeedSlider() {
         // Speed Slider
-        reverseSpeedSlider = new JSlider(0, 128);
-        reverseSpeedSlider.setMinorTickSpacing(4);
-        reverseSpeedSlider.setMajorTickSpacing(32);
+        reverseSpeedSlider = new JSlider(0, 15);
+        reverseSpeedSlider.setMinorTickSpacing(1);
+        reverseSpeedSlider.setMajorTickSpacing(5);
         reverseSpeedSlider.setPaintTicks(true);
         reverseSpeedSlider.setSnapToTicks(true);
         reverseSpeedSlider.setValue(0);
@@ -121,7 +121,7 @@ public class ControlPanel {
         maxLabel.setForeground(Color.darkGray);
 
         labelTable.put(0, minLabel);
-        labelTable.put(128, maxLabel);
+        labelTable.put(15, maxLabel);
 
         reverseSpeedSlider.setPaintLabels(true);
         reverseSpeedSlider.setLabelTable(labelTable);
@@ -129,9 +129,9 @@ public class ControlPanel {
 
     private void createForwardSpeedSlider() {
         // Speed Slider
-        forwardSpeedSlider = new JSlider(0, 128);
-        forwardSpeedSlider.setMinorTickSpacing(4);
-        forwardSpeedSlider.setMajorTickSpacing(32);
+        forwardSpeedSlider = new JSlider(0, 15);
+        forwardSpeedSlider.setMinorTickSpacing(1);
+        forwardSpeedSlider.setMajorTickSpacing(5);
         forwardSpeedSlider.setPaintTicks(true);
         forwardSpeedSlider.setSnapToTicks(true);
         forwardSpeedSlider.setValue(0);
@@ -149,7 +149,7 @@ public class ControlPanel {
         maxLabel.setForeground(Color.darkGray);
 
         labelTable.put(0, minLabel);
-        labelTable.put(128, maxLabel);
+        labelTable.put(15, maxLabel);
 
         forwardSpeedSlider.setPaintLabels(true);
         forwardSpeedSlider.setLabelTable(labelTable);

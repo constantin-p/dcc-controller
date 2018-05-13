@@ -3,6 +3,7 @@ package dcccontroller.serial;
 import com.fazecast.jSerialComm.SerialPort;
 import dcccontroller.util.Change;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -12,7 +13,7 @@ public class SerialCommunicationHelper {
 
     private SerialPort[] ports = {};
     private SerialPort activePort = null;
-    private final String COMMAND_PREFIX = "DCC_COMMAND:";
+    private final String COMMAND_PREFIX = "DCC_CTRL:";
     private final int BAUD_RATE = 9600;
 
     // Notification system
@@ -118,7 +119,9 @@ public class SerialCommunicationHelper {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            listenForMessages(1);
+            listenForMessages(3);
+        } else {
+            System.out.println("Port busy!");
         }
     }
 
@@ -128,7 +131,7 @@ public class SerialCommunicationHelper {
         }
         listenThread = new Thread(){
             public void run(){
-                receiveMessage(1);
+                receiveMessage(lines);
             }
         };
 
@@ -138,18 +141,23 @@ public class SerialCommunicationHelper {
     private void receiveMessage(int lines) {
         if (activePort != null) {
             activePort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
-            Scanner in = new Scanner(activePort.getInputStream());
-            int count = 0;
-            try {
-                while(count <= lines && in.hasNextLine()) {
-                    String line = in.nextLine();
-                    System.out.println("← in  :" + line);
-                    count++;
-                }
+            InputStream instr = activePort.getInputStream();
+            if (instr != null) {
+                Scanner in = new Scanner(instr);
+                int count = 0;
+                try {
+                    while(count <= lines && in.hasNextLine()) {
+                        String line = in.nextLine();
+                        System.out.println("← in  :" + line);
+                        count++;
+                    }
 
-                in.close();
-            } catch (Exception e) {
-                e.printStackTrace();
+                    in.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("Port busy!");
             }
         }
     }
