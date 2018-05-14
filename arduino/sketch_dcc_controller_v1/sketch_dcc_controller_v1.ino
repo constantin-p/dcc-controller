@@ -105,7 +105,7 @@ ISR(TIMER2_OVF_vect) { // Timer2 overflow interrupt vector handler
           if (byteIndex >= msg[msgIndex].len) { // is there a next byte?  
             // this was already the XOR byte then advance to preamble
             // ONLY FOR DEBUG
-            //Serial.println();
+            // Serial.println();
             state = PREAMBLE;
             preamble_count = 16;
 
@@ -121,13 +121,13 @@ ISR(TIMER2_OVF_vect) { // Timer2 overflow interrupt vector handler
       TCNT2 = latency + TIMER_SHORT;
       last_timer = TIMER_SHORT;
       // ONLY FOR DEBUG
-      //Serial.print("1");
+      // Serial.print("1");
     } else {   // data = 0 long pulse
       latency = TCNT2;
       TCNT2 = latency + TIMER_LONG; 
       last_timer = TIMER_LONG;
       // ONLY FOR DEBUG
-      //Serial.print("0");
+      // Serial.print("0");
     } 
   }
 }
@@ -439,6 +439,7 @@ String getValue(String data, char separator, int index) {
 // SETUP & LOOP
 void setup() {
   pinMode(ledPin, OUTPUT); // Set pin as OUTPUT (inidicate activity)
+  pinMode(DCC_PIN, OUTPUT);
   Serial.begin(9600);
   Serial.println("arduino:SETUP");
   SetupDCCTimer();
