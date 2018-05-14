@@ -1,6 +1,7 @@
 package dcccontroller.configuration;
 
 
+import dcccontroller.ErrorManager;
 import dcccontroller.configuration.csv.CSVFileHandler;
 import dcccontroller.model.CPFunctionItem;
 import dcccontroller.util.Change;
@@ -151,9 +152,7 @@ public class ConfigurationManager {
     }
 
     private void showErrorMessage(Exception e) {
-        SwingUtilities.invokeLater(() -> {
-            JOptionPane.showMessageDialog(null, "Could not open file \n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        });
+        ErrorManager.showErrorMessage("Configuration Error", "Could not open file \n" + e.getMessage());
     }
 
     private String createConfigName(File file) {

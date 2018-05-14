@@ -1,6 +1,7 @@
 package dcccontroller.serial;
 
 import com.fazecast.jSerialComm.SerialPort;
+import dcccontroller.ErrorManager;
 import dcccontroller.util.Change;
 
 import java.io.InputStream;
@@ -121,7 +122,7 @@ public class SerialCommunicationHelper {
             }
             listenForMessages(3);
         } else {
-            System.out.println("Port busy!");
+            ErrorManager.showErrorMessage("Connection Error", "Port busy!");
         }
     }
 
